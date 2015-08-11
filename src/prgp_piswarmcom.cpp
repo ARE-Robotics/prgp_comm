@@ -48,13 +48,13 @@
  *  Getting the string from the piswarm_com topic and comparing it with the "b" to
  *  set the returnFlag.
  */
-void ardroneCmdRev(const std_msgs::StringConstPtr str)
+void ardroneCmdRevCb(const std_msgs::StringConstPtr str)
 {
   ROS_INFO_STREAM(*str);
-  ROS_INFO("%s\n", str->data.c_str());
+  ROS_INFO("%s", str->data.c_str());
   std::string k = str->data.substr(0, 1);
-  ROS_INFO("%s\n", k.c_str());
-  if ("b" == str->data.c_str())
+  ROS_INFO("%s", k.c_str());
+  if ("b" == str->data)
   {
     returnFlag = true;
   }
@@ -67,15 +67,33 @@ void ardroneCmdRev(const std_msgs::StringConstPtr str)
  */
 void sendCmdToPiSwarm(char msg_w)
 {
-  char msg_r;
+  char msg_r = '\0';
+  int nbytes;
+  printf("Start to send Command to the Pi-Swarm\n");
 
-  write(bt_port, &msg_w, 1);
-  printf("%c\n", msg_w);
+  ioctl(bt_port, FIONREAD, &nbytes);
+  printf("Bytes in queue for reading:%d\n", nbytes);
+  if (nbytes > 0)
+  {
+    if (read(bt_port, &msg_r, 1))
+    {
+      printf("Succefssfully reading from the port\n");
+    }
+  }
+  if (msg_r == msg_w)
+  {
 
-  ndPause.sleep(); //Wait for 2 seconds to be published
-  msg_r = '\0';
-  read(bt_port, &msg_r, 1);
-  printf("%c\n", msg_r);
+  }
+  else
+  {
+    if (write(bt_port, &msg_w, 1))
+    {
+      printf("Succefssfully writing to the port\n");
+    }
+  }
+
+  printf("Writing:%c\n", msg_w);
+  printf("Reading:%c\n", msg_r);
 
   if (msg_r == msg_w)
   {
@@ -84,13 +102,21 @@ void sendCmdToPiSwarm(char msg_w)
     {
       searchFlag = true;
       startFlag = false;
+      tcflush(bt_port, TCIFLUSH);
     }
     else
     {
       returnFlag = false;
       beaconNotified = false;
+
+      tcflush(bt_port, TCIFLUSH);
+      close(bt_port);
+      close(bt_t_port);
+      printf("closing port\n");
     }
+
   }
+
 }
 
 /** Get the command from the Pi-Swarm by the bluetooth port.
@@ -99,118 +125,210 @@ void sendCmdToPiSwarm(char msg_w)
  */
 void revCmdFromPiSwarm()
 {
-  char msg_w = 'q';
-  char msg_rr;
+  char msg_r = '\0';
+  char msg_w = '\0';
+  int nbytes;
+  int i = 0;
 
-  write(bt_port, &msg_w, 1);
-  printf("%c\n", msg_w);
+  printf("Start to receive Command form the Pi-Swarm\n");
 
-  ndPause.sleep(); //Wait for 2 seconds to be published
-  msg_rr = '\0';
-  read(bt_port, &msg_rr, 1);
-  printf("%c\n", msg_rr);
+  ioctl(bt_port, FIONREAD, &nbytes);
+  printf("Bytes in queue for reading:%d\n", nbytes);
+  if (nbytes > 0)
+  {
+    if (read(bt_port, &msg_r, 1))
+    {
+      printf("Succefssfully reading from the port\n");
+    }
+  }
+  if ((msg_r == 'r') || (msg_r == 'c') || (msg_r == 'm'))
+  {
+    while (i < 3)
+    {
+      if (write(bt_port, &msg_r, 1))
+      {
+        printf("Succefssfully writing to the port\n");
+        msg_w = msg_r;
+      }
+      i++;
+    }
 
-  if (msg_rr == 'r')
+  }
+
+  printf("Reading:%c\n", msg_r);
+  printf("Writing:%c\n", msg_w);
+
+  if (msg_r == 'r')
   {
     printf("Command is successfully sent to AR.Drone to search black_roundel tag\n");
-    beaconFlag = true;
+    recruitFlag = true;
     searchFlag = false;
     target_tag = 'r';
-    ndPause.sleep();
-    ndPause.sleep();
-    ndPause.sleep();
+    tcflush(bt_port, TCIFLUSH);
   }
-  else if (msg_rr == 'c')
+  else if (msg_r == 'c')
   {
     printf("Command is successfully sent to AR.Drone to search COCARDE tag\n");
-    beaconFlag = true;
+    recruitFlag = true;
     searchFlag = false;
     target_tag = 'c';
+    tcflush(bt_port, TCIFLUSH);
   }
-  else if (msg_rr == 'm')
+  else if (msg_r == 'm')
   {
     printf("Command is successfully sent to AR.Drone to search mix type tag\n");
-    beaconFlag = true;
+    recruitFlag = true;
     searchFlag = false;
     target_tag = 'm';
+    //tcflush(bt_port, TCIFLUSH);
   }
+
 }
 
 /** Send the command to the home beacon by the bluetooth port.
+ *  @param[in] msg_w The input char variable means the symbol to send.
  *  The function send the command to the home beacon and compare the symbol
  *  sent and the symbol received to make sure the command is received.
  */
 void sendCmdToHomeBeacon(char msg_w)
 {
-  char msg_r;
+  char msg_r = '\0';
+  int nbytes;
+  printf("Start to send Command to the Home beacon\n");
 
-  write(bt_port, &msg_w, 1);
-  printf("%c\n", msg_w);
+  ioctl(bt_port, FIONREAD, &nbytes);
+  printf("Bytes in queue for reading:%d\n", nbytes);
+  if (nbytes > 0)
+  {
+    if (read(bt_port, &msg_r, 1))
+    {
+      printf("Succefssfully reading from the port\n");
+    }
+  }
+  if (msg_r == msg_w)
+  {
 
-  ndPause.sleep(); //Wait for 2 seconds to be published
-  msg_r = '\0';
-  read(bt_port, &msg_r, 1);
-  printf("%c\n", msg_r);
+  }
+  else
+  {
+    if (write(bt_port, &msg_w, 1))
+    {
+      printf("Succefssfully writing to the port\n");
+    }
+  }
+
+  printf("Writing:%c\n", msg_w);
+  printf("Reading:%c\n", msg_r);
 
   if (msg_r == msg_w)
   {
     printf("Command is successfully sent to Home beacon\n");
     sendToHome = false;
     beaconNotified = true;
+    //returnFlag = true; //for test
+    tcflush(bt_port, TCIFLUSH);
   }
 }
 
 /** Send the command to the target beacon by the bluetooth port.
+ *  @param[in] msg_w The input char variable means the symbol to send.
  *  The function send the command to the target beacon and compare the symbol
  *  sent and the symbol received to make sure the command is received.
  */
 void sendCmdToTargetBeacon(char msg_w)
 {
-  char msg_r;
+  char msg_r = '\0';
+  int nbytes;
+  printf("Start to send Command to the Target beacon\n");
 
-  write(bt_t_port, &msg_w, 1);
-  printf("%c\n", msg_w);
+  ioctl(bt_t_port, FIONREAD, &nbytes);
+  printf("Bytes in queue for reading:%d\n", nbytes);
+  if (nbytes > 0)
+  {
+    if (read(bt_t_port, &msg_r, 1))
+    {
+      printf("Succefssfully reading from the port\n");
+    }
+  }
+  if (msg_r == msg_w)
+  {
 
-  ndPause.sleep(); //Wait for 2 seconds to be published
-  msg_r = '\0';
-  read(bt_t_port, &msg_r, 1);
-  printf("%c\n", msg_r);
+  }
+  else
+  {
+    if (write(bt_t_port, &msg_w, 1))
+    {
+      printf("Succefssfully writing to the port\n");
+    }
+  }
+
+  printf("Writing:%c\n", msg_w);
+  printf("Reading:%c\n", msg_r);
 
   if (msg_r == msg_w)
   {
     printf("Command is successfully sent to Target beacon\n");
-    sendToTarget = false;
-    sendToHome = true;
+    if (startFlag == true)
+    {
+      targetonFlag = false;
+    }
+    else
+    {
+      sendToTarget = false;
+      sendToHome = true;
+    }
+    tcflush(bt_t_port, TCIFLUSH);
   }
 }
 
-/** Check the bluetooth port availability
- *  Check the bluetooth port from PC to home beacon and the port from PC to target beacon
- *  . If the port is not available, try to open it again.
+/** Open the bluetooth port and set the port attributes.
+ *  Open the bluetooth port from PC to home beacon and the port from PC to target beacon
+ *  . Set the port attributes, such as the baud rate.
  */
-void portChecking()
+void openBTPort()
 {
+  struct termios Opt;
+  struct termios Opt_t;
+
+  bt_port = open("/dev/rfcomm0", O_RDWR | O_NOCTTY | O_NDELAY);
+  //fcntl(bt_port, F_SETFL, 0);
+  tcgetattr(bt_port, &Opt);
+  cfsetispeed(&Opt, B115200);
+  cfsetospeed(&Opt, B115200);
+  //Opt.c_cflag |= (CLOCAL | CREAD);
+
+  tcflush(bt_port, TCIOFLUSH);
+  tcsetattr(bt_port, TCSANOW, &Opt);
+
   if (bt_port == -1)
   {
-    ROS_INFO("Error opening the bt_port"); //Inform user on the terminal
-    bt_port = open("/dev/rfcomm0", O_RDWR | O_NOCTTY | O_NDELAY);
+    ROS_INFO("Error opening the bt_port");
   }
   else
   {
-    ROS_INFO("bt_port is open"); //Inform user on the terminal
+    ROS_INFO("bt_port is open");
+
   }
-  printf("%d\n", bt_port);
+
+  bt_t_port = open("/dev/rfcomm1", O_RDWR | O_NOCTTY | O_NDELAY);
+  //fcntl(bt_t_port, F_SETFL, 0);
+  tcgetattr(bt_t_port, &Opt_t);
+  cfsetispeed(&Opt_t, B115200);
+  cfsetospeed(&Opt_t, B115200);
+  //Opt_t.c_cflag |= (CLOCAL | CREAD);
+
+  tcflush(bt_t_port, TCIOFLUSH);
+  tcsetattr(bt_t_port, TCSANOW, &Opt_t);
 
   if (bt_t_port == -1)
   {
-    ROS_INFO("Error opening the bt_t_port"); //Inform user on the terminal
-    bt_t_port = open("/dev/rfcomm1", O_RDWR | O_NOCTTY | O_NDELAY);
+    ROS_INFO("Error opening the bt_t_port");
   }
   else
   {
-    ROS_INFO("bt_t_port is open"); //Inform user on the terminal
+    ROS_INFO("bt_t_port is open");
+
   }
-  printf("%d\n", bt_t_port);
 }
 
 /** Main function and running loop for the prgp_piwarmcom package.
@@ -220,54 +338,88 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "prgp_piswarmcom");
   ros::NodeHandle ndh_; /**< ROS node handle */
+  char msg = 'f';
   ndPause = ros::Duration(1, 0);
 
   cmdPiPub = ndh_.advertise<std_msgs::String>("piswarm_com", 1);
-  cmdPiSub = ndh_.subscribe("piswarm_com", 1, ardroneCmdRev);
+  cmdPiSub = ndh_.subscribe("piswarm_com", 1, ardroneCmdRevCb);
 
-  bt_port = open("/dev/rfcomm0", O_RDWR | O_NOCTTY | O_NDELAY);
-  bt_t_port = open("/dev/rfcomm1", O_RDWR | O_NOCTTY | O_NDELAY);
+  openBTPort();
 
-  //set_interface_attribs (bt_h_port, B115200, 0);
+  //Reset the flag for mbed.
+  if (write(bt_port, &msg, 1))
+  {
+    printf("Writing to reset the flag for home mbed\n");
+  }
+  if (write(bt_t_port, &msg, 1))
+    {
+      printf("Writing to reset the flag for target mbed\n");
+    }
+
 
   while (ros::ok)
   {
-    portChecking();
+
     if (startFlag == true)
     {
-      sendCmdToPiSwarm('s');
-      ROS_INFO("PRGP: Send command to start the Pi-Swarm by serial communication");
+      //targetonFlag = false;
+      if (targetonFlag == true)
+      {
+        //Turn on the target beacon.
+        sendCmdToTargetBeacon('o');
+      }
+      else
+      {
+        //Start the Pi-Swarm
+        sendCmdToPiSwarm('s');
+      }
     }
 
     if (searchFlag == true) //Pi-Swarm search the target
     {
       revCmdFromPiSwarm();
     }
-    if (beaconFlag == true)
+    if (recruitFlag == true)
     {
-      sprintf(&c_P[0], "%c", target_tag);
-      //c_P = target_tag;
+      switch(target_tag){
+        case 'r':
+          c_P = "r";
+          break;
+        case 'c':
+          c_P = "c";
+          break;
+        case 'm':
+          c_P = "m";
+          break;
+        default:
+          break;
+      }
       s_P.data = c_P.c_str();
       cmdPiPub.publish(s_P);
       target_tag = '\0';
-      if (sendToTarget == true)
-      {
-        sendCmdToTargetBeacon('x'); // to Target beacon
-      }
-      if (sendToHome == true)
-      {
-        sendCmdToHomeBeacon('o'); // to Home beacon
-      }
+      sendToTarget = true;
+      recruitFlag = false;
     }
+
+    if (sendToTarget == true)
+    {
+      sendCmdToTargetBeacon('x'); // to Target beacon
+    }
+
+    if (sendToHome == true)
+    {
+      sendCmdToHomeBeacon('o'); // to Home beacon
+    }
+
     if ((returnFlag == true) && (beaconNotified == true))
     {
       sendCmdToPiSwarm('b');
     }
-
+    //ndPause.sleep();
+    //ndPause.sleep();
+    usleep(500000);
     ros::spinOnce();
   }
-  close(bt_port);
-  close(bt_t_port);
 
   return 0;
 }
