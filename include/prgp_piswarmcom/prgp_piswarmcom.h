@@ -59,6 +59,13 @@
 #include <errno.h>
 #include <termios.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+
+
+
 
 char target_tag = '\0'; /**< The char variable to store the target tag type. */
 
@@ -69,9 +76,10 @@ ros::Subscriber cmdPiSub; /**< Sublisher for sending the command to Pi-Swarm by 
 std_msgs::String s_P; /**< Message for publishing to the AR.Drone by piswarm_come. */
 std::string c_P;
 
+bool targetonFlag = true;/**< True means sending the command to turn on the target beacon. */
 bool startFlag = true; /**< True means sending the start command to the Pi-Swarm. */
 bool searchFlag = false; /**< The value will be true when the Pi-Swarm starts to search the target. */
-bool beaconFlag = false; /**< The value will be true when the target is found. */
+bool recruitFlag = false; /**< The value will be true when the target is found. */
 bool returnFlag = false; /**< The value will be true when the return command is received from AR.Drone. */
 bool sendToTarget = false; /**< The value will be true before sending the command to the target beacon. */
 bool sendToHome = false; /**< The value will be true before sending the command to the home beacon. */
