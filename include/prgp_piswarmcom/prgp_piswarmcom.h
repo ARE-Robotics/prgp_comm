@@ -66,8 +66,8 @@
 
 
 
+#define START_DRONE_PKG_IN_CODE
 
-char target_tag = '\0'; /**< The char variable to store the target tag type. */
 
 ros::Duration ndPause; /**< The duration to pause the node. */
 ros::Publisher cmdPiPub; /**< Publisher for sending the command to Pi-Swarm by piswarm_com. */
@@ -84,6 +84,8 @@ bool returnFlag = false; /**< The value will be true when the return command is 
 bool sendToTarget = false; /**< The value will be true before sending the command to the target beacon. */
 bool sendToHome = false; /**< The value will be true before sending the command to the home beacon. */
 bool beaconNotified = false; /**< The value will be true after the beacon received the command. */
+
+char target_tag = '\0'; /**< The char variable to store the target tag type. */
 
 int16_t bt_port = -1; /**< The bluetooth port for the home beacon */
 int16_t bt_t_port = -1; /**< The bluetooth port for the target beacon */
