@@ -46,14 +46,13 @@
 
 /** Callback function to receive the command from the ARDrone by topic piswarm_com.
  *  Getting the string from the piswarm_com topic and comparing it with the "b" to
- *  set the returnFlag.
+ *  set the returnFlag. std::string k = str->data.substr(0, 1) can be used.
  */
 void ardroneCmdRevCb(const std_msgs::StringConstPtr str)
 {
   ROS_INFO_STREAM(*str);
   ROS_INFO("%s", str->data.c_str());
-  std::string k = str->data.substr(0, 1);
-  ROS_INFO("%s", k.c_str());
+
   if ("b" == str->data)
   {
     returnFlag = true;
@@ -112,7 +111,7 @@ void sendCmdToPiSwarm(char msg_w)
       tcflush(bt_port, TCIFLUSH);
       close(bt_port);
       close(bt_t_port);
-      printf("closing port\n");
+      printf("Close the port\n");
     }
 
   }
@@ -128,7 +127,7 @@ void revCmdFromPiSwarm()
   char msg_r = '\0';
   char msg_w = '\0';
   int nbytes;
-  int i = 0;
+  uint8_t i = 0;
 
   printf("Start to receive Command form the Pi-Swarm\n");
 
@@ -143,7 +142,7 @@ void revCmdFromPiSwarm()
   }
   if ((msg_r == 'r') || (msg_r == 'c') || (msg_r == 'm'))
   {
-    while (i < 3)
+    while (i < 5)
     {
       if (write(bt_port, &msg_r, 1))
       {
@@ -180,7 +179,7 @@ void revCmdFromPiSwarm()
     recruitFlag = true;
     searchFlag = false;
     target_tag = 'm';
-    //tcflush(bt_port, TCIFLUSH);
+    tcflush(bt_port, TCIFLUSH);
   }
 
 }
@@ -225,7 +224,6 @@ void sendCmdToHomeBeacon(char msg_w)
     printf("Command is successfully sent to Home beacon\n");
     sendToHome = false;
     beaconNotified = true;
-    //returnFlag = true; //for test
     tcflush(bt_port, TCIFLUSH);
   }
 }
@@ -339,23 +337,26 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "prgp_piswarmcom");
   ros::NodeHandle ndh_; /**< ROS node handle */
   char msg = 'f';
+  uint8_t l = 0;
   ndPause = ros::Duration(1, 0);
 
   cmdPiPub = ndh_.advertise<std_msgs::String>("piswarm_com", 1);
   cmdPiSub = ndh_.subscribe("piswarm_com", 1, ardroneCmdRevCb);
-
   openBTPort();
 
   //Reset the flag for mbed.
-  if (write(bt_port, &msg, 1))
+  while(l < 5)
   {
-    printf("Writing to reset the flag for home mbed\n");
-  }
-  if (write(bt_t_port, &msg, 1))
+    if (write(bt_port, &msg, 1))
+    {
+      printf("Writing to reset the flag for home mbed\n");
+    }
+    if (write(bt_t_port, &msg, 1))
     {
       printf("Writing to reset the flag for target mbed\n");
     }
-
+    l++;
+  }
 
   while (ros::ok)
   {
@@ -381,7 +382,12 @@ int main(int argc, char **argv)
     }
     if (recruitFlag == true)
     {
-      switch(target_tag){
+#ifdef START_DRONE_PKG_IN_CODE
+      std::cout << "STARTDRONE" << std::endl;
+      sleep(15);
+#endif
+      switch (target_tag)
+      {
         case 'r':
           c_P = "r";
           break;
@@ -399,6 +405,7 @@ int main(int argc, char **argv)
       target_tag = '\0';
       sendToTarget = true;
       recruitFlag = false;
+
     }
 
     if (sendToTarget == true)
@@ -415,8 +422,7 @@ int main(int argc, char **argv)
     {
       sendCmdToPiSwarm('b');
     }
-    //ndPause.sleep();
-    //ndPause.sleep();
+
     usleep(500000);
     ros::spinOnce();
   }
