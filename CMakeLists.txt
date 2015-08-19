@@ -97,6 +97,19 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+# set header and source files
+set(PISWARMCOM_SOURCE_FILES
+  src/prgp_piswarmcom.cpp
+)
+
+set(PISWARMCOM_HEADER_FILES
+  include/prgp_piswarmcom/prgp_piswarmcom.h
+)
+
+set(PISWARMCOM_TEST_FILES
+  src/test/utest.cpp
+)
+
 ## Declare a cpp library
 # add_library(prgp_piswarmcom
 #   src/${PROJECT_NAME}/prgp_piswarmcom.cpp
@@ -104,6 +117,7 @@ include_directories(
 
 ## Declare a cpp executable
 # add_executable(prgp_piswarmcom_node src/prgp_piswarmcom_node.cpp)
+add_executable(prgp_piswarmcom src/piswarmcom_main.cpp ${PISWARMCOM_SOURCE_FILES} ${PISWARMCOM_HEADER_FILES})
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -113,6 +127,7 @@ include_directories(
 # target_link_libraries(prgp_piswarmcom_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(prgp_piswarmcom ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -161,5 +176,3 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(prgp_piswarmcom src/prgp_piswarmcom.cpp)
-target_link_libraries(prgp_piswarmcom ${catkin_LIBRARIES})
