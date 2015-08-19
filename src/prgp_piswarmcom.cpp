@@ -35,8 +35,12 @@
 /**
  *  @file prgp_piswarmcom.cpp
  *  @brief The source file for prgp_piswarmcom package.
- *  @details The prgp_piswarmcom package is created and tested by Chengqing Liu.
- *  @version 1.0
+ *  @details The prgp_piswarmcom package is created and tested by Chengqing Liu. The package is updated to
+ *  class style based on its initial package by Chengqing Liu on 19 Aug., 2015. The package is responsible
+ *  for the bluetooth communication between the home beacon and prgp_piswarmcom package, the bluetooth
+ *  communication between the target beacon and prgp_piswarmcom package, and the ros topic communication
+ *  between prgp_piswarmcom package and prgp_ardrone package.
+ *  @version 1.1
  *  @author Chengqing Liu
  *  @date 01 July 2015
  *  @copyright BSD License.
@@ -44,11 +48,41 @@
 
 #include <prgp_piswarmcom/prgp_piswarmcom.h>
 
+/** Initialise the variables and paramaters.
+ *  Initialise the ROS time, ROS Duration, Publishers, Subscribers, Flags and so on.
+ */
+PRGPPiSwarmCom::PRGPPiSwarmCom()
+{
+  ndPause = ros::Duration(1, 0);
+  cmdPiPub = ndh_.advertise<std_msgs::String>("piswarm_com", 1);
+  cmdPiSub = ndh_.subscribe("piswarm_com", 1, &PRGPPiSwarmCom::ardroneCmdRevCb, this);
+
+  targetonFlag = true;
+  startFlag = true;
+  searchFlag = false;
+  recruitFlag = false;
+  returnFlag = false;
+  sendToTarget = false;
+  sendToHome = false;
+  beaconNotified = false;
+
+  target_tag = '\0';
+  bt_port = -1;
+  bt_t_port = -1;
+}
+
+/** Class destructor.
+ */
+PRGPPiSwarmCom::~PRGPPiSwarmCom()
+{
+
+}
+
 /** Callback function to receive the command from the ARDrone by topic piswarm_com.
  *  Getting the string from the piswarm_com topic and comparing it with the "b" to
  *  set the returnFlag. std::string k = str->data.substr(0, 1) can be used.
  */
-void ardroneCmdRevCb(const std_msgs::StringConstPtr str)
+void PRGPPiSwarmCom::ardroneCmdRevCb(const std_msgs::StringConstPtr str)
 {
   ROS_INFO_STREAM(*str);
   ROS_INFO("%s", str->data.c_str());
@@ -64,7 +98,7 @@ void ardroneCmdRevCb(const std_msgs::StringConstPtr str)
  *  The function will compare the symbol sent and the symbol received to make sure
  *  the command is received.
  */
-void sendCmdToPiSwarm(char msg_w)
+void PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
@@ -122,7 +156,7 @@ void sendCmdToPiSwarm(char msg_w)
  *  The fuction get the command from the home beacon, which receive the command from the
  *  Pi-Swarm through RF communication.
  */
-void revCmdFromPiSwarm()
+void PRGPPiSwarmCom::revCmdFromPiSwarm()
 {
   char msg_r = '\0';
   char msg_w = '\0';
@@ -189,7 +223,7 @@ void revCmdFromPiSwarm()
  *  The function send the command to the home beacon and compare the symbol
  *  sent and the symbol received to make sure the command is received.
  */
-void sendCmdToHomeBeacon(char msg_w)
+void PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
@@ -233,7 +267,7 @@ void sendCmdToHomeBeacon(char msg_w)
  *  The function send the command to the target beacon and compare the symbol
  *  sent and the symbol received to make sure the command is received.
  */
-void sendCmdToTargetBeacon(char msg_w)
+void PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
@@ -283,7 +317,7 @@ void sendCmdToTargetBeacon(char msg_w)
  *  Open the bluetooth port from PC to home beacon and the port from PC to target beacon
  *  . Set the port attributes, such as the baud rate.
  */
-void openBTPort()
+void PRGPPiSwarmCom::openBTPort()
 {
   struct termios Opt;
   struct termios Opt_t;
@@ -329,23 +363,22 @@ void openBTPort()
   }
 }
 
-/** Main function and running loop for the prgp_piwarmcom package.
+/** Main running loop for the prgp_piwarmcom package.
+ *  This function is to open the BT port, reset the flags in the Home and target beacon with the command,
+ *  send the command to turn on the target beacon, send the command to start the Pi-Swarm via home beacon,
+ *  get the command from Pi-Swarm via home beacon and publish command to prgp_ardrone package via the topic.
+ *  Then the function is to turn off the target beacon and turn on the home beacon. After getting the command
+ *  from the prgp_ardrone package via the topic, the function is to send the command to return the Pi-Swarm.
  */
-int main(int argc, char **argv)
+void PRGPPiSwarmCom::run()
 {
-
-  ros::init(argc, argv, "prgp_piswarmcom");
-  ros::NodeHandle ndh_; /**< ROS node handle */
   char msg = 'f';
   uint8_t l = 0;
-  ndPause = ros::Duration(1, 0);
 
-  cmdPiPub = ndh_.advertise<std_msgs::String>("piswarm_com", 1);
-  cmdPiSub = ndh_.subscribe("piswarm_com", 1, ardroneCmdRevCb);
   openBTPort();
 
   //Reset the flag for mbed.
-  while(l < 5)
+  while (l < 5)
   {
     if (write(bt_port, &msg, 1))
     {
@@ -426,7 +459,5 @@ int main(int argc, char **argv)
     usleep(500000);
     ros::spinOnce();
   }
-
-  return 0;
 }
 
