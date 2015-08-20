@@ -102,14 +102,14 @@ public:
   PRGPPiSwarmCom(void);
   ~PRGPPiSwarmCom(void);
 
-  void run();
+  bool run();
 
   void ardroneCmdRevCb(const std_msgs::StringConstPtr str);
-  void sendCmdToPiSwarm(char msg_w);
-  void revCmdFromPiSwarm();
-  void sendCmdToHomeBeacon(char msg_w);
-  void sendCmdToTargetBeacon(char msg_w);
-  void openBTPort();
+  bool sendCmdToPiSwarm(char msg_w);
+  bool revCmdFromPiSwarm();
+  bool sendCmdToHomeBeacon(char msg_w);
+  bool sendCmdToTargetBeacon(char msg_w);
+  bool openBTPort();
 };
 
 #endif /* PRGP_PISWARMCOM_INCLUDE_PRGP_PISWARMCOM_PRGP_PISWARMCOM_H_ */
