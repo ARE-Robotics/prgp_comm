@@ -375,7 +375,7 @@ bool PRGPPiSwarmCom::openBTPort()
 
   }
 
-  if((bt_port == 1) && (bt_t_port == 1))
+  if ((bt_port == 1) && (bt_t_port == 1))
   {
     return true; //add this for unit testing
   }
