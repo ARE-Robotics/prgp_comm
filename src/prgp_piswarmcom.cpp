@@ -98,7 +98,7 @@ void PRGPPiSwarmCom::ardroneCmdRevCb(const std_msgs::StringConstPtr str)
  *  The function will compare the symbol sent and the symbol received to make sure
  *  the command is received.
  */
-void PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
+bool PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
@@ -136,6 +136,7 @@ void PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
       searchFlag = true;
       startFlag = false;
       tcflush(bt_port, TCIFLUSH);
+      return true; //add this for unit testing
     }
     else
     {
@@ -146,8 +147,13 @@ void PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
       close(bt_port);
       close(bt_t_port);
       printf("Close the port\n");
+      return true; //add this for unit testing
     }
 
+  }
+  else
+  {
+    return false; //add this for unit testing
   }
 
 }
@@ -156,7 +162,7 @@ void PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
  *  The fuction get the command from the home beacon, which receive the command from the
  *  Pi-Swarm through RF communication.
  */
-void PRGPPiSwarmCom::revCmdFromPiSwarm()
+bool PRGPPiSwarmCom::revCmdFromPiSwarm()
 {
   char msg_r = '\0';
   char msg_w = '\0';
@@ -215,7 +221,7 @@ void PRGPPiSwarmCom::revCmdFromPiSwarm()
     target_tag = 'm';
     tcflush(bt_port, TCIFLUSH);
   }
-
+  return recruitFlag; //add this for unit testing
 }
 
 /** Send the command to the home beacon by the bluetooth port.
@@ -223,7 +229,7 @@ void PRGPPiSwarmCom::revCmdFromPiSwarm()
  *  The function send the command to the home beacon and compare the symbol
  *  sent and the symbol received to make sure the command is received.
  */
-void PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
+bool PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
@@ -260,6 +266,7 @@ void PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
     beaconNotified = true;
     tcflush(bt_port, TCIFLUSH);
   }
+  return beaconNotified; //add this for unit testing
 }
 
 /** Send the command to the target beacon by the bluetooth port.
@@ -267,7 +274,7 @@ void PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
  *  The function send the command to the target beacon and compare the symbol
  *  sent and the symbol received to make sure the command is received.
  */
-void PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
+bool PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
@@ -303,13 +310,19 @@ void PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
     if (startFlag == true)
     {
       targetonFlag = false;
+      return true; //add this for unit testing
     }
     else
     {
       sendToTarget = false;
       sendToHome = true;
+      return true; //add this for unit testing
     }
     tcflush(bt_t_port, TCIFLUSH);
+  }
+  else
+  {
+    return false; //add this for unit testing
   }
 }
 
@@ -317,7 +330,7 @@ void PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
  *  Open the bluetooth port from PC to home beacon and the port from PC to target beacon
  *  . Set the port attributes, such as the baud rate.
  */
-void PRGPPiSwarmCom::openBTPort()
+bool PRGPPiSwarmCom::openBTPort()
 {
   struct termios Opt;
   struct termios Opt_t;
@@ -361,6 +374,15 @@ void PRGPPiSwarmCom::openBTPort()
     ROS_INFO("bt_t_port is open");
 
   }
+
+  if((bt_port == 1) && (bt_t_port == 1))
+  {
+    return true; //add this for unit testing
+  }
+  else
+  {
+    return false; //add this for unit testing
+  }
 }
 
 /** Main running loop for the prgp_piwarmcom package.
@@ -370,7 +392,7 @@ void PRGPPiSwarmCom::openBTPort()
  *  Then the function is to turn off the target beacon and turn on the home beacon. After getting the command
  *  from the prgp_ardrone package via the topic, the function is to send the command to return the Pi-Swarm.
  */
-void PRGPPiSwarmCom::run()
+bool PRGPPiSwarmCom::run()
 {
   char msg = 'f';
   uint8_t l = 0;
@@ -459,5 +481,6 @@ void PRGPPiSwarmCom::run()
     usleep(500000);
     ros::spinOnce();
   }
+  return true; //add this for unit testing
 }
 
