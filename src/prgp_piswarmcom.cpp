@@ -69,6 +69,13 @@ PRGPPiSwarmCom::PRGPPiSwarmCom()
   target_tag = '\0';
   bt_port = -1;
   bt_t_port = -1;
+  pi_starttime = 0;
+  pi_returntime = 0;
+  pi_targettime = 0;
+  home_ontime = 0;
+  target_ontime = 0;
+  target_offtime = 0;
+  face_change = true;
 }
 
 /** Class destructor.
@@ -84,8 +91,10 @@ PRGPPiSwarmCom::~PRGPPiSwarmCom()
  */
 void PRGPPiSwarmCom::ardroneCmdRevCb(const std_msgs::StringConstPtr str)
 {
+#ifdef DEBUG
   ROS_INFO_STREAM(*str);
   ROS_INFO("%s", str->data.c_str());
+#endif
 
   if ("b" == str->data)
   {
@@ -102,15 +111,20 @@ bool PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
+#ifdef DEBUG
   printf("Start to send Command to the Pi-Swarm\n");
-
+#endif
   ioctl(bt_port, FIONREAD, &nbytes);
+#ifdef DEBUG
   printf("Bytes in queue for reading:%d\n", nbytes);
+#endif
   if (nbytes > 0)
   {
     if (read(bt_port, &msg_r, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully reading from the port\n");
+#endif
     }
   }
   if (msg_r == msg_w)
@@ -121,20 +135,26 @@ bool PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
   {
     if (write(bt_port, &msg_w, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully writing to the port\n");
+#endif
     }
   }
-
+#ifdef DEBUG
   printf("Writing:%c\n", msg_w);
   printf("Reading:%c\n", msg_r);
+#endif
 
   if (msg_r == msg_w)
   {
+#ifdef DEBUG
     printf("Command is successfully sent to Pi-Swarm\n");
+#endif
     if (returnFlag == false)
     {
       searchFlag = true;
       startFlag = false;
+      pi_starttime = ros::WallTime::now().toSec() - begin_time.toSec();
       tcflush(bt_port, TCIFLUSH);
       return true; //add this for unit testing
     }
@@ -142,7 +162,7 @@ bool PRGPPiSwarmCom::sendCmdToPiSwarm(char msg_w)
     {
       returnFlag = false;
       beaconNotified = false;
-
+      pi_returntime = ros::WallTime::now().toSec() - begin_time.toSec();
       tcflush(bt_port, TCIFLUSH);
       close(bt_port);
       close(bt_t_port);
@@ -168,16 +188,22 @@ bool PRGPPiSwarmCom::revCmdFromPiSwarm()
   char msg_w = '\0';
   int nbytes;
   uint8_t i = 0;
-
+#ifdef DEBUG
   printf("Start to receive Command form the Pi-Swarm\n");
+#endif
 
   ioctl(bt_port, FIONREAD, &nbytes);
+#ifdef DEBUG
   printf("Bytes in queue for reading:%d\n", nbytes);
+#endif
+
   if (nbytes > 0)
   {
     if (read(bt_port, &msg_r, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully reading from the port\n");
+#endif
     }
   }
   if ((msg_r == 'r') || (msg_r == 'c') || (msg_r == 'm'))
@@ -186,39 +212,51 @@ bool PRGPPiSwarmCom::revCmdFromPiSwarm()
     {
       if (write(bt_port, &msg_r, 1))
       {
+#ifdef DEUG
         printf("Succefssfully writing to the port\n");
+#endif
         msg_w = msg_r;
       }
       i++;
     }
 
   }
-
+#ifdef DEBUG
   printf("Reading:%c\n", msg_r);
   printf("Writing:%c\n", msg_w);
+#endif
 
   if (msg_r == 'r')
   {
+#ifdef DEBUG
     printf("Command is successfully sent to AR.Drone to search black_roundel tag\n");
+#endif
     recruitFlag = true;
     searchFlag = false;
     target_tag = 'r';
+    pi_targettime = ros::WallTime::now().toSec() - begin_time.toSec();
     tcflush(bt_port, TCIFLUSH);
   }
   else if (msg_r == 'c')
   {
+#ifdef DEBUG
     printf("Command is successfully sent to AR.Drone to search COCARDE tag\n");
+#endif
     recruitFlag = true;
     searchFlag = false;
     target_tag = 'c';
+    pi_targettime = ros::WallTime::now().toSec() - begin_time.toSec();
     tcflush(bt_port, TCIFLUSH);
   }
   else if (msg_r == 'm')
   {
+#ifdef DEBUG
     printf("Command is successfully sent to AR.Drone to search mix type tag\n");
+#endif
     recruitFlag = true;
     searchFlag = false;
     target_tag = 'm';
+    pi_targettime = ros::WallTime::now().toSec() - begin_time.toSec();
     tcflush(bt_port, TCIFLUSH);
   }
   return recruitFlag; //add this for unit testing
@@ -233,15 +271,21 @@ bool PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
+#ifdef DEBUG
   printf("Start to send Command to the Home beacon\n");
+#endif
 
   ioctl(bt_port, FIONREAD, &nbytes);
+#ifdef DEBUG
   printf("Bytes in queue for reading:%d\n", nbytes);
+#endif
   if (nbytes > 0)
   {
     if (read(bt_port, &msg_r, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully reading from the port\n");
+#endif
     }
   }
   if (msg_r == msg_w)
@@ -252,18 +296,24 @@ bool PRGPPiSwarmCom::sendCmdToHomeBeacon(char msg_w)
   {
     if (write(bt_port, &msg_w, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully writing to the port\n");
+#endif
     }
   }
-
+#ifdef DEBUG
   printf("Writing:%c\n", msg_w);
   printf("Reading:%c\n", msg_r);
+#endif
 
   if (msg_r == msg_w)
   {
+#ifdef DEBUG
     printf("Command is successfully sent to Home beacon\n");
+#endif
     sendToHome = false;
     beaconNotified = true;
+    home_ontime = ros::WallTime::now().toSec() - begin_time.toSec();
     tcflush(bt_port, TCIFLUSH);
   }
   return beaconNotified; //add this for unit testing
@@ -278,15 +328,21 @@ bool PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
 {
   char msg_r = '\0';
   int nbytes;
+#ifdef DEBUG
   printf("Start to send Command to the Target beacon\n");
+#endif
 
   ioctl(bt_t_port, FIONREAD, &nbytes);
+#ifdef DEBUG
   printf("Bytes in queue for reading:%d\n", nbytes);
+#endif
   if (nbytes > 0)
   {
     if (read(bt_t_port, &msg_r, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully reading from the port\n");
+#endif
     }
   }
   if (msg_r == msg_w)
@@ -297,25 +353,32 @@ bool PRGPPiSwarmCom::sendCmdToTargetBeacon(char msg_w)
   {
     if (write(bt_t_port, &msg_w, 1))
     {
+#ifdef DEBUG
       printf("Succefssfully writing to the port\n");
+#endif
     }
   }
-
+#ifdef DEBUG
   printf("Writing:%c\n", msg_w);
   printf("Reading:%c\n", msg_r);
+#endif
 
   if (msg_r == msg_w)
   {
+#ifdef DEBUG
     printf("Command is successfully sent to Target beacon\n");
+#endif
     if (startFlag == true)
     {
       targetonFlag = false;
+      target_ontime = ros::WallTime::now().toSec() - begin_time.toSec();
       return true; //add this for unit testing
     }
     else
     {
       sendToTarget = false;
       sendToHome = true;
+      target_offtime = ros::WallTime::now().toSec() - begin_time.toSec();
       return true; //add this for unit testing
     }
     tcflush(bt_t_port, TCIFLUSH);
@@ -347,11 +410,11 @@ bool PRGPPiSwarmCom::openBTPort()
 
   if (bt_port == -1)
   {
-    ROS_INFO("Error opening the bt_port");
+    printf("Error opening the bt_port\n");
   }
   else
   {
-    ROS_INFO("bt_port is open");
+    printf("bt_port is open\n");
 
   }
 
@@ -367,11 +430,11 @@ bool PRGPPiSwarmCom::openBTPort()
 
   if (bt_t_port == -1)
   {
-    ROS_INFO("Error opening the bt_t_port");
+    printf("Error opening the bt_t_port\n");
   }
   else
   {
-    ROS_INFO("bt_t_port is open");
+    printf("bt_t_port is open\n");
 
   }
 
@@ -385,6 +448,102 @@ bool PRGPPiSwarmCom::openBTPort()
   }
 }
 
+/** The function to implement the UI for the project.
+ *  The function draws the UI for the project. It displays the project information and results.
+ */
+bool PRGPPiSwarmCom::prgp_ui()
+{
+  double clock_time = 0;
+  uint32_t min = 0;
+  uint32_t sec = 0;
+  uint32_t msec = 0;
+
+  printf("\033[2J"); //clear the screen.
+  clock_time = ros::WallTime::now().toSec() - begin_time.toSec();
+
+  min = int(clock_time / 60.0);
+  sec = int(fmod(clock_time, 60));
+  msec = int((fmod(clock_time, 60) - sec) * 10);
+
+  printf("-----------------------------------------\n");
+  if (face_change == true)
+  {
+    printf("|   *\\(^_^)/*    Welcome!   *\\(^_^)/*   |\n");
+    face_change = false;
+  }
+  else
+  {
+    printf("|   *\\(o_o)/*    Welcome!   *\\(o_o)/*   |\n");
+    face_change = true;
+  }
+  printf("|                                       |\n");
+  printf("|**********University of York***********|\n");
+  printf("|**************Robot Lab****************|\n");
+  printf("|*********ARE PRGP Project 2015*********|\n");
+  printf("|Group member:                          |\n");
+  printf("|          Robert Evans                 |\n");
+  printf("|          Homero Silva                 |\n");
+  printf("|          Shengsong Yang               |\n");
+  printf("|          Chengqing Liu                |\n");
+  printf("|                                       |\n");
+  printf("|**************Time count***************|\n");
+  printf("|               %02d:%02d.%d                 |\n", min, sec, msec);
+  printf("|**************Time count***************|\n");
+  printf("|                                       |\n");
+  printf("|************Project results************|\n");
+  if (target_ontime > 0)
+  {
+    min = int(target_ontime / 60.0);
+    sec = int(fmod(target_ontime, 60));
+    msec = int((fmod(target_ontime, 60) - sec) * 10);
+  }
+  printf("|1. target_ontime:     %02d:%02d.%d          |\n", min, sec, msec);
+
+  if (pi_starttime > 0)
+  {
+    min = int(pi_starttime / 60.0);
+    sec = int(fmod(pi_starttime, 60));
+    msec = int((fmod(pi_starttime, 60) - sec) * 10);
+  }
+  printf("|2. pi_starttime:      %02d:%02d.%d          |\n", min, sec, msec);
+
+  if (pi_targettime > 0)
+  {
+    min = int(pi_targettime / 60.0);
+    sec = int(fmod(pi_targettime, 60));
+    msec = int((fmod(pi_targettime, 60) - sec) * 10);
+  }
+  printf("|3. pi_targettime:     %02d:%02d.%d          |\n", min, sec, msec);
+
+  if (target_offtime > 0)
+  {
+    min = int(target_offtime / 60.0);
+    sec = int(fmod(target_offtime, 60));
+    msec = int((fmod(target_offtime, 60) - sec) * 10);
+  }
+  printf("|4. target_offtime:    %02d:%02d.%d          |\n", min, sec, msec);
+
+  if (home_ontime > 0)
+  {
+    min = int(home_ontime / 60.0);
+    sec = int(fmod(home_ontime, 60));
+    msec = int((fmod(home_ontime, 60) - sec) * 10);
+  }
+  printf("|5. home_ontime:       %02d:%02d.%d          |\n", min, sec, msec);
+
+  if (pi_returntime > 0)
+  {
+    min = int(pi_returntime / 60.0);
+    sec = int(fmod(pi_returntime, 60));
+    msec = int((fmod(pi_returntime, 60) - sec) * 10);
+  }
+  printf("|6. pi_returntime:     %02d:%02d.%d          |\n", min, sec, msec);
+  printf("|************Project results************|\n");
+
+  printf("-----------------------------------------\n");
+
+  return true;
+}
 /** Main running loop for the prgp_piwarmcom package.
  *  This function is to open the BT port, reset the flags in the Home and target beacon with the command,
  *  send the command to turn on the target beacon, send the command to start the Pi-Swarm via home beacon,
@@ -398,27 +557,35 @@ bool PRGPPiSwarmCom::run()
   uint8_t l = 0;
 
   openBTPort();
+  sleep(1);
 
   //Reset the flag for mbed.
   while (l < 5)
   {
     if (write(bt_port, &msg, 1))
     {
+#ifdef DEBUG
       printf("Writing to reset the flag for home mbed\n");
+#endif
     }
     if (write(bt_t_port, &msg, 1))
     {
+#ifdef DEBUG
       printf("Writing to reset the flag for target mbed\n");
+#endif
     }
     l++;
   }
 
+  begin_time = ros::WallTime::now();
+
   while (ros::ok)
   {
+    prgp_ui();
 
     if (startFlag == true)
     {
-      //targetonFlag = false;
+
       if (targetonFlag == true)
       {
         //Turn on the target beacon.
