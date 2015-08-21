@@ -53,7 +53,7 @@
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "prgp_piswarmcom");
-  ROS_INFO("Started prgp_piswarmcom Node. Hi from ARE 2014/15");
+  ROS_INFO("Start prgp_piswarmcom Node. Hi from ARE 2014/15");
 
   PRGPPiSwarmCom PRGPPiSwarmCom;
   PRGPPiSwarmCom.run();
