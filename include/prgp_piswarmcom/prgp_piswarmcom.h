@@ -68,7 +68,8 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
-#define START_DRONE_PKG_IN_CODE
+#define START_DRONE_PKG_IN_CODE  //Open to starting the AR.Drone packages from the code
+//#define DEBUG //open the information printing for debugging
 
 /** The main class for the prgp_piswarmcom package.
  */
@@ -77,6 +78,7 @@ class PRGPPiSwarmCom
 private:
 
   ros::NodeHandle ndh_; /**< ROS node handle */
+  ros::WallTime begin_time;
   ros::Duration ndPause; /**< The duration to pause the node. */
   ros::Publisher cmdPiPub; /**< Publisher for sending the command to Pi-Swarm by piswarm_com. */
   ros::Subscriber cmdPiSub; /**< Sublisher for sending the command to Pi-Swarm by piswarm_com. */
@@ -95,21 +97,29 @@ private:
 
   char target_tag; /**< The char variable to store the target tag type. */
 
-  int16_t bt_port; /**< The bluetooth port for the home beacon */
-  int16_t bt_t_port; /**< The bluetooth port for the target beacon */
+  int16_t bt_port; /**< The bluetooth port for the home beacon. */
+  int16_t bt_t_port; /**< The bluetooth port for the target beacon. */
+  double pi_starttime; /**< Record the time when starting the Pi-Swarm. */
+  double pi_returntime; /**< Record the time when returning the Pi-Swarm. */
+  double pi_targettime; /**< Record the time when Pi-Swarm reaching the target. */
+  double home_ontime; /**< Record the time when turning on the home beacon flashing. */
+  double target_ontime; /**< Record the time when turning on the target beacon flashing. */
+  double target_offtime; /**< Record the time when turning off the target beacon flashing. */
+  bool face_change; /**< For face changing in the project UI. */
 
 public:
   PRGPPiSwarmCom(void);
   ~PRGPPiSwarmCom(void);
 
-  void run();
+  bool run();
 
   void ardroneCmdRevCb(const std_msgs::StringConstPtr str);
-  void sendCmdToPiSwarm(char msg_w);
-  void revCmdFromPiSwarm();
-  void sendCmdToHomeBeacon(char msg_w);
-  void sendCmdToTargetBeacon(char msg_w);
-  void openBTPort();
+  bool sendCmdToPiSwarm(char msg_w);
+  bool revCmdFromPiSwarm();
+  bool sendCmdToHomeBeacon(char msg_w);
+  bool sendCmdToTargetBeacon(char msg_w);
+  bool openBTPort();
+  bool prgp_ui();
 };
 
 #endif /* PRGP_PISWARMCOM_INCLUDE_PRGP_PISWARMCOM_PRGP_PISWARMCOM_H_ */
