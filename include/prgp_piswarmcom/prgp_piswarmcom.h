@@ -68,7 +68,7 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 
-#define START_DRONE_PKG_IN_CODE  //Open to starting the AR.Drone packages from the code
+//#define START_DRONE_PKG_IN_CODE  //Open to starting the AR.Drone packages from the code
 //#define DEBUG //open the information printing for debugging
 
 /** The main class for the prgp_piswarmcom package.

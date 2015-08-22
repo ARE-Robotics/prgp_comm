@@ -582,6 +582,8 @@ bool PRGPPiSwarmCom::run()
   while (ros::ok)
   {
     prgp_ui();
+    std::cout << "STARTDRONE" << std::endl;
+          sleep(15);
 
     if (startFlag == true)
     {
@@ -605,6 +607,7 @@ bool PRGPPiSwarmCom::run()
     if (recruitFlag == true)
     {
 #ifdef START_DRONE_PKG_IN_CODE
+      //The prpg_launch.sh is not quite reliable to identify this. So this is commented.
       std::cout << "STARTDRONE" << std::endl;
       sleep(15);
 #endif
