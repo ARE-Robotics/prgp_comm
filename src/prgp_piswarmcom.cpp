@@ -476,16 +476,12 @@ bool PRGPPiSwarmCom::prgp_ui()
     printf("|   *\\(o_o)/*    Welcome!   *\\(o_o)/*   |\n");
     face_change = true;
   }
-  printf("|                                       |\n");
+  printf("-----------------------------------------\n");
   printf("|**********University of York***********|\n");
   printf("|**************Robot Lab****************|\n");
   printf("|*********ARE PRGP Project 2015*********|\n");
-  printf("|Group member:                          |\n");
-  printf("|          Robert Evans                 |\n");
-  printf("|          Homero Silva                 |\n");
-  printf("|          Shengsong Yang               |\n");
-  printf("|          Chengqing Liu                |\n");
-  printf("|                                       |\n");
+  printf("|      Robert Evans, Homero Silva       |\n");
+  printf("|     Shengsong Yang, Chengqing Liu     |\n");
   printf("|**************Time count***************|\n");
   printf("|               %02d:%02d.%d                 |\n", min, sec, msec);
   printf("|**************Time count***************|\n");
@@ -493,51 +489,59 @@ bool PRGPPiSwarmCom::prgp_ui()
   printf("|************Project results************|\n");
   if (target_ontime > 0)
   {
-    min = int(target_ontime / 60.0);
-    sec = int(fmod(target_ontime, 60));
-    msec = int((fmod(target_ontime, 60) - sec) * 10);
+    printf("|1. target_ontime:     %02d:%02d.%d          |\n", int(target_ontime / 60.0), int(fmod(target_ontime, 60)),
+           int((fmod(target_ontime, 60) - int(fmod(target_ontime, 60))) * 10));
   }
-  printf("|1. target_ontime:     %02d:%02d.%d          |\n", min, sec, msec);
-
+  else
+  {
+    printf("|1. target_ontime:     %02d:%02d.%d          |\n", min, sec, msec);
+  }
   if (pi_starttime > 0)
   {
-    min = int(pi_starttime / 60.0);
-    sec = int(fmod(pi_starttime, 60));
-    msec = int((fmod(pi_starttime, 60) - sec) * 10);
+    printf("|2. pi_starttime:      %02d:%02d.%d          |\n", int(pi_starttime / 60.0), int(fmod(pi_starttime, 60)),
+           int((fmod(pi_starttime, 60) - int(fmod(pi_starttime, 60))) * 10));
   }
-  printf("|2. pi_starttime:      %02d:%02d.%d          |\n", min, sec, msec);
-
+  else
+  {
+    printf("|2. pi_starttime:      %02d:%02d.%d          |\n", min, sec, msec);
+  }
   if (pi_targettime > 0)
   {
-    min = int(pi_targettime / 60.0);
-    sec = int(fmod(pi_targettime, 60));
-    msec = int((fmod(pi_targettime, 60) - sec) * 10);
-  }
-  printf("|3. pi_targettime:     %02d:%02d.%d          |\n", min, sec, msec);
+    printf("|3. pi_targettime:     %02d:%02d.%d          |\n", int(pi_targettime / 60.0), int(fmod(pi_targettime, 60)),
+           int((fmod(pi_targettime, 60) - int(fmod(pi_targettime, 60))) * 10));
 
+  }
+  else
+  {
+    printf("|3. pi_targettime:     %02d:%02d.%d          |\n", min, sec, msec);
+  }
   if (target_offtime > 0)
   {
-    min = int(target_offtime / 60.0);
-    sec = int(fmod(target_offtime, 60));
-    msec = int((fmod(target_offtime, 60) - sec) * 10);
+    printf("|4. target_offtime:    %02d:%02d.%d          |\n", int(target_offtime / 60.0),
+           int(fmod(target_offtime, 60)), int((fmod(target_offtime, 60) - int(fmod(target_offtime, 60))) * 10));
   }
-  printf("|4. target_offtime:    %02d:%02d.%d          |\n", min, sec, msec);
-
+  else
+  {
+    printf("|4. target_offtime:    %02d:%02d.%d          |\n", min, sec, msec);
+  }
   if (home_ontime > 0)
   {
-    min = int(home_ontime / 60.0);
-    sec = int(fmod(home_ontime, 60));
-    msec = int((fmod(home_ontime, 60) - sec) * 10);
+    printf("|5. home_ontime:       %02d:%02d.%d          |\n", int(home_ontime / 60.0), int(fmod(home_ontime, 60)),
+           int((fmod(home_ontime, 60) - int(fmod(home_ontime, 60))) * 10));
   }
-  printf("|5. home_ontime:       %02d:%02d.%d          |\n", min, sec, msec);
-
+  else
+  {
+    printf("|5. home_ontime:       %02d:%02d.%d          |\n", min, sec, msec);
+  }
   if (pi_returntime > 0)
   {
-    min = int(pi_returntime / 60.0);
-    sec = int(fmod(pi_returntime, 60));
-    msec = int((fmod(pi_returntime, 60) - sec) * 10);
+    printf("|5. pi_returntime:     %02d:%02d.%d          |\n", int(pi_returntime / 60.0), int(fmod(pi_returntime, 60)),
+           int((fmod(pi_returntime, 60) - int(fmod(pi_returntime, 60))) * 10));
   }
-  printf("|6. pi_returntime:     %02d:%02d.%d          |\n", min, sec, msec);
+  else
+  {
+    printf("|6. pi_returntime:     %02d:%02d.%d          |\n", min, sec, msec);
+  }
   printf("|************Project results************|\n");
 
   printf("-----------------------------------------\n");
@@ -582,8 +586,6 @@ bool PRGPPiSwarmCom::run()
   while (ros::ok)
   {
     prgp_ui();
-    std::cout << "STARTDRONE" << std::endl;
-          sleep(15);
 
     if (startFlag == true)
     {
