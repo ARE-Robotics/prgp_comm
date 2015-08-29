@@ -51,7 +51,8 @@ TEST(CustomComTest, SendCmdToPiSwarmTest)
 {
   PRGPPiSwarmCom com;
   std::cout << "========== Start testing sendCmdToPiSwarm(char msg_w) ==========" << std::endl;
-  EXPECT_TRUE(com.sendCmdToPiSwarm('a')); //TODO some test cases
+  EXPECT_TRUE(com.sendCmdToPiSwarm('a'));
+  EXPECT_TRUE(com.sendCmdToPiSwarm('b'));
 }
 TEST(CustomComTest, RevCmdFromPiSwarmTest)
 {
@@ -63,13 +64,15 @@ TEST(CustomComTest, SendCmdToHomeBeaconTest)
 {
   PRGPPiSwarmCom com;
   std::cout << "========== Start testing sendCmdToHomeBeacon(char msg_w) ==========" << std::endl;
-  EXPECT_TRUE(com.sendCmdToHomeBeacon('a')); //TODO test cases
+  EXPECT_TRUE(com.sendCmdToHomeBeacon('a'));
+  EXPECT_TRUE(com.sendCmdToHomeBeacon('b'));
 }
 TEST(CustomComTest, SendToTargetBeaconTest)
 {
   PRGPPiSwarmCom com;
   std::cout << "========== Start testing sendCmdToTargetBeacon(char msg_w) ==========" << std::endl;
-  EXPECT_TRUE(com.sendCmdToTargetBeacon('a')); //TODO test cases
+  EXPECT_TRUE(com.sendCmdToTargetBeacon('a'));
+  EXPECT_TRUE(com.sendCmdToTargetBeacon('b'));
 }
 TEST(CustomComTest, OpenBTPortTest)
 {
@@ -82,12 +85,6 @@ TEST(CustomComTest, PRGPUITest)
   PRGPPiSwarmCom com;
   std::cout << "========== Start testing prgp_ui() ==========" << std::endl;
   EXPECT_TRUE(com.prgp_ui());
-}
-TEST(CustomComTest, RunTest)
-{
-  PRGPPiSwarmCom com;
-  std::cout << "========== Start testing run() ==========" << std::endl;
-  EXPECT_TRUE(com.run());
 }
 
 
