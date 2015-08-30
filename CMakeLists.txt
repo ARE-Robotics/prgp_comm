@@ -92,6 +92,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
 include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -107,7 +108,7 @@ set(PISWARMCOM_HEADER_FILES
 )
 
 set(PISWARMCOM_TEST_FILES
-  src/test/utest.cpp
+  test/utest.cpp
 )
 
 ## Declare a cpp library
@@ -174,6 +175,14 @@ target_link_libraries(prgp_piswarmcom ${catkin_LIBRARIES})
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 #catkin_add_gtest(${PROJECT_NAME}-test src/test/test_prgp_piswarmcom.cpp ${PISWARMCOM_SOURCE_FILES} ${PISWARMCOM_HEADER_FILES})
-
+catkin_add_gtest(${PROJECT_NAME}-test 
+  ${PISWARMCOM_SOURCE_FILES}
+  ${PISWARMCOM_HEADER_FILES}
+  ${PISWARMCOM_TEST_FILES}
+)
+if(TARGET ${PROJECT_NAME}-test)
+   target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
+ endif()
+ 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
