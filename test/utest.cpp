@@ -74,12 +74,6 @@ TEST(CustomComTest, SendToTargetBeaconTest)
   EXPECT_TRUE(com.sendCmdToTargetBeacon('a'));
   EXPECT_TRUE(com.sendCmdToTargetBeacon('b'));
 }
-TEST(CustomComTest, OpenBTPortTest)
-{
-  PRGPPiSwarmCom com;
-  std::cout << "========== Start testing openBTPort() ==========" << std::endl;
-  EXPECT_TRUE(com.openBTPort());
-}
 TEST(CustomComTest, PRGPUITest)
 {
   PRGPPiSwarmCom com;
