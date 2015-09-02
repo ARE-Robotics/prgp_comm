@@ -535,7 +535,7 @@ bool PRGPPiSwarmCom::prgp_ui()
   }
   if (pi_returntime > 0)
   {
-    printf("|5. pi_returntime:     %02d:%02d.%d          |\n", int(pi_returntime / 60.0), int(fmod(pi_returntime, 60)),
+    printf("|6. pi_returntime:     %02d:%02d.%d          |\n", int(pi_returntime / 60.0), int(fmod(pi_returntime, 60)),
            int((fmod(pi_returntime, 60) - int(fmod(pi_returntime, 60))) * 10));
   }
   else
